@@ -42,3 +42,7 @@ ThingSpeak (Cloud Platform)
 GitHub (Code Repository)
 
 
+Flow chart:
+![image](https://github.com/user-attachments/assets/b7c8af66-577d-454c-8d5f-20233a1fe196)
+
+
