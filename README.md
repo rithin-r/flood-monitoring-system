@@ -45,4 +45,6 @@ GitHub (Code Repository)
 Flow chart:
 ![image](https://github.com/user-attachments/assets/b7c8af66-577d-454c-8d5f-20233a1fe196)
 
+Circuit:
+![circuit](https://github.com/user-attachments/assets/53e5d713-6678-4c15-b79a-62d35ff71714)
 
