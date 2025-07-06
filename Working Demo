@@ -1,3 +1,18 @@
 Link for the demo video:
 
 https://youtu.be/6hh2nFGQzkg?feature=shared
+
+
+Concept & Working:
+
+Measurement: Ultrasonic sensor (HC-SR04) calculates the distance to the water surface to determine water level.
+
+Processing: ESP32 reads sensor data and compares it to a predefined threshold (e.g., 50 cm).
+
+Local Alerts: If water level exceeds the threshold, LED turns ON and Buzzer sounds as a warning.
+
+Display: OLED screen shows real-time water level readings locally.
+
+Cloud Update: ESP32 sends water level data every 15 seconds to ThingSpeak via WiFi.
+
+Remote Monitoring: Authorities can monitor live graphs on ThingSpeak to assess flood risk and act promptly.
