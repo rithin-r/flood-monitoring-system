@@ -1,0 +1,107 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+const char* ssid = "Wokwi-GUEST";      // Wokwi simulation WiFi
+const char* password = "";
+
+const char* serverName = "http://api.thingspeak.com/update";
+const char* apiKey = "P98OEWZ4HRT4WSBV"; 
+
+const int trigPin = 5;
+const int echoPin = 18;
+const int ledPin = 21;
+const int buzzerPin = 19;
+
+long duration;
+float distance;
+float threshold = 50.0; // Threshold distance in cm
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("SSD1306 allocation failed");
+    for (;;); // Don't proceed, loop forever
+  }
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Flood Monitoring");
+  display.display();
+  delay(2000);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi connected");
+}
+
+void loop() {
+  // Ultrasonic sensor measurement
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+
+  Serial.print("Water Level: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Display on OLED
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("Water Level: ");
+  display.print(distance);
+  display.println(" cm");
+  display.display();
+
+  // Local Alert System
+  if (distance < threshold) {
+    digitalWrite(ledPin, HIGH);
+    digitalWrite(buzzerPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+    digitalWrite(buzzerPin, LOW);
+  }
+
+  // Send data to ThingSpeak
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    String serverPath = String(serverName) + "?api_key=" + String(apiKey) + "&field1=" + String(distance);
+
+    http.begin(serverPath.c_str());
+    int httpResponseCode = http.GET();
+    if (httpResponseCode > 0) {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+    } else {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
+  }
+
+  delay(15000); // ThingSpeak allows updates every 15 sec
+}
